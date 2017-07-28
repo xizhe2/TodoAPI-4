@@ -1,7 +1,6 @@
-/*they are all objects, so we can use object destructor to pull out their attributs/variables 
- *instead of require module directly
- ***************** this file contient only the APIs request********************
-*/
+// require('./config/config')
+require('./config/config')
+
 // //standar lib import
 var express = require('express')
 var bodyParser = require('body-parser') 
@@ -15,7 +14,7 @@ var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todos')
 var {User} = require('./models/user')
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT;
 
 app.use(bodyParser.json())
 
@@ -39,9 +38,7 @@ app.get('/todos/:id', (req, res)=>{
     // res.send(req.params)  //to test
     var id = req.params.id
 
-    if(!ObjectID.isValid(id)){
-        return res.status(404).send()
-    }
+    if(!ObjectID.isValid(id)){return res.status(404).send()}
     
     //find return a promis(a todo)
     Todo.findById(id)
@@ -86,8 +83,10 @@ app.patch('/todos/:id', (req, res) => {
      }).catch((e) => {res.status(404).send(e)})
 })
 
-app.listen(port, 
-    ()=>{console.log(`Port ${port} is listening...`)}
-)
+// app.listen(port, ()=>{console.log(`Port ${port} is listening...`)})
+app.listen(port, () => {
+  console.log(`Started up at port ${port}`);
+});
+
 
 module.exports = {app}
