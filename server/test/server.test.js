@@ -71,7 +71,13 @@ describe('GET/todos/:id', ()=>{
         .expect(404)
         .end(done)
     })
+})
 
+describe('DELETE/todos/:id', () => {
+    it('should delete a todo', (done) =>{})
 
+    it('should send back 404 if id not found', (done) =>{})
 
+    it('should send back 404 if id not valide', (done) =>{})
+    
 })
