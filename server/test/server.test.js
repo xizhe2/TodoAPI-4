@@ -1,5 +1,6 @@
 const expect = require('expect')
 const request = require('supertest')
+
 const {ObjectID} = require('mongodb')
 const {app} = require('./../server')
 const {Todo} = require('./../models/todos')
@@ -7,7 +8,7 @@ const {Todo} = require('./../models/todos')
 //add an array of todos for test propose only
 const todos = [
     {_id: new ObjectID, text: 'todo 1'},
-    {_id: new ObjectID, text: 'todo text 2'}
+    {_id: new ObjectID, text: 'todo text 2', completed: false, completedAt: 333}
 ]
 
 //test life cycle
@@ -77,7 +78,6 @@ describe('GET/todos/:id', ()=>{
         .expect(404)
         .end(done)
     })
-
 })
 
 describe('DELETE/todos/:id', () => {
@@ -112,4 +112,54 @@ describe('DELETE/todos/:id', () => {
         .end(done)
     })
     
+})
+
+describe('UPDATE/todos/:id', () =>{
+    it('should update todo with completed', (done) =>{
+        var hexId = todos[0]._id.toHexString()
+        var text = 'update first todo from todos array'
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({text, completed: true})
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo._id).toBe(hexId)
+            expect(res.body.todo.text).toBe(text)
+            expect(res.body.todo.completed).toBe(true)
+            expect(res.body.todo.completedAt).toBeA('number')
+        })
+        .end(done)
+    })
+
+    it('should update todo with non-completed', (done) =>{
+        var hexId = todos[1]._id.toHexString()
+        var text = 'update 2nd todo from todos array'
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({text, completed: false})
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo._id).toBe(hexId)
+            expect(res.body.todo.text).toBe(text)
+            expect(res.body.todo.completed).toBe(false)
+            expect(res.body.todo.completedAt).toNotExist()
+        })
+        .end(done)
+    })
+
+    it('should send back 404 if id not found', (done) =>{
+        var hexId = new ObjectID().toHexString
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .expect(404)
+        .end(done)
+    })
+
+    it('should send back 404 if id not valide', (done) =>{
+        request(app)
+        .patch("/todos/123abc")
+        .expect(404)
+        .end(done)
+    })
+
 })
