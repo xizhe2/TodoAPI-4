@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
 const _ = require('lodash') 
+const bcrypt = require('bcryptjs')
 
 var UserSchema = new mongoose.Schema({
     email: {
@@ -66,6 +67,28 @@ UserSchema.statics.findByToken = function (token) {
         'tokens.access': 'auth'
     })
 }
+
+//****************************to add mongoose middleware to UserSchema*************************
+//to make sure the inside the function(hash password) run before <event> save, then call next to finish the middleware task
+UserSchema.pre('save', function (next) {
+    var user = this
+    //only hash pw when user is changed
+    if(user.isModified()){
+        bcrypt.genSalt(10, (err, salt) =>{
+        bcrypt.hash(user.password, salt, (err, hash) => {
+            //update pw
+            user.password = hash
+            next()
+        })
+    })
+    }else{
+        next()
+    }
+
+
+})
+
+
 
 var User = mongoose.model('User', UserSchema)  //to attache methods to User obj
 
