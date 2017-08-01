@@ -88,7 +88,10 @@ app.post('/user', (req, res) => {
     var user = new User(body)
     
     user.save()
-    .then((user)=>{res.send(user)})
+    .then((user)=>{
+        return user.generateAuthToken() //return keyword for chain promise with token 
+    })
+    .then((token) => {res.header('x-auth', token).send(user)}) // custom header to store token value and send it back with user obj
     .catch((err)=>{res.status(400).send(err)})
 })
 
