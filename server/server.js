@@ -13,6 +13,7 @@ const _ = require('lodash')
 var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todos')
 var {User} = require('./models/user')
+var {authenticate} = require('./middleware/authenticate')
 
 const port = process.env.PORT;
 
@@ -94,6 +95,12 @@ app.post('/user', (req, res) => {
     .then((token) => {res.header('x-auth', token).send(user)}) // custom header to store token value and send it back with user obj
     .catch((err)=>{res.status(400).send(err)})
 })
+
+app.get('/user/me', authenticate, (req, res) =>{
+    res.send(req.user)
+})
+
+
 
 app.listen(port, () => {
   console.log(`Started up at port ${port}`);

@@ -20,7 +20,7 @@ var UserSchema = new mongoose.Schema({
         require: true,
         minlength: 6
     },
-    token: [{
+    tokens: [{
         access: {type: String, require: true},
         token: {type: String, require: true}
     }]
@@ -43,11 +43,30 @@ UserSchema.methods.generateAuthToken = function () {
     var token = jwt.sign({_id: user._id.toHexString(), access}, 'secret123').toString()
 
     //add token to user's token array and save it DB and return a token value
-    user.token.push({access, token})
-    return user.save().then(() => {return token}) // return chain promises = return it's return value
+    user.tokens.push({access, token})
+    return user.save().then(() => {return token}) // chain promises's return value = return it's return value
 
 }
-var User = mongoose.model('User', UserSchema)  //to attache methods to User obj
 
+//****************************to add model method to UserSchema*************************
+UserSchema.statics.findByToken = function (token) {
+    var User = this
+    var decode  //undefine variable for try/catch of verify()
+    try{
+        decode = jwt.verify(token, 'secret123') 
+    } catch(e){
+        return Promise.reject() //reject value will be in server.js caller catch
+    }
+
+    //if decode succes, we will find the user associated with its properties matches
+    //return keyword means we can add a then call on server.js to findByToken
+    return User.findOne({
+        '_id': decode._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    })
+}
+
+var User = mongoose.model('User', UserSchema)  //to attache methods to User obj
 
 module.exports = {User}
